@@ -1,0 +1,26 @@
+{
+  "name": "back_firebase",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elHongo14/back_firebase.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elHongo14/back_firebase/issues"
+  },
+  "homepage": "https://github.com/elHongo14/back_firebase#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "express.js": "^1.0.0",
+    "firebase": "^9.17.1"
+  }
+}
