@@ -1,7 +1,8 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
 const {initializeApp} = require('firebase/app')
-const {getFirestore, collection, getDoc, setDoc, doc, getDocs} = require('firebase/firestore')
+const {getFirestore, collection, getDoc, doc, setDoc, getDocs} = require('firebase/firestore')
+const cors = require('cors')
 require('dotenv/config')
 
 // Configuración de Firebase
@@ -21,9 +22,14 @@ const db = getFirestore()
 // Inicializar el servidor
 const app = express()
 
-app.use(express.json())
+const corsOptions = {
+  "origin": "*",
+  "optionsSucessStatus": 200
+}
 
-const PORT = process.env.PORT || 19000
+app.use(express.json())
+app.use(cors(corsOptions))
+
 
 // Rutas para las peticiones EndPoint | API
 app.post('/registro', (req, res) => {
@@ -67,6 +73,7 @@ app.post('/registro', (req, res) => {
             // Guardar en la base de datos
             setDoc(doc(users, email), req.body).then(reg => {
               res.json({
+                message: 'realizado',
                 'alert': 'Success!!'
               })
             })
@@ -77,15 +84,57 @@ app.post('/registro', (req, res) => {
   }
 })
 
-app.post('/usuarios', (req, res) => {
-  const users = collection(db, 'users')
-  console.log('usuarios', users)
+app.get('/usuarios', async (req, res) => {
+  const colRef = collection(db, 'users')
+  const docsSnap = await getDocs(colRef)
+  let data = []
+  docsSnap.forEach(doc => {
+    data.push(doc.data())
+  })
   res.json({
+    message: "Usuarios",
     'alert': 'Success!!',
-    users
+    data
   })
 })
 
+
+app.post('/login', (req, res) => {
+  let {email, password} = req.body
+
+  if(!email.length || !password.length){
+    res.json({
+      'alert': 'No se han recibido los datos correctamente'
+    })
+  }
+
+  const users = collection(db, 'users')
+  getDoc(doc(users, email))
+  .then(user => {
+    if(!user.exists()){
+      return res.json({
+        'alert': 'Correo no registrado en la base de datos'
+      })
+    } else {
+      bcrypt.compare(password, user.data().password, (error, result) => {
+        if (result) {
+          let data = user.data()
+          res.json({
+            'alert': 'Success!!',
+            name: data.name,
+            email: data.email
+          })
+        } else {
+          return res.json({
+            'alert': 'Contraseña incorrecta'
+          })
+        }
+      })
+    }
+  })
+})
+
+const PORT = process.env.PORT || 19000
 
 // Ejecutamos el servidor
 app.listen(PORT, () => {
