@@ -1,7 +1,7 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
 const {initializeApp} = require('firebase/app')
-const {getFirestore, collection, getDoc, doc, setDoc, getDocs} = require('firebase/firestore')
+const {getFirestore, collection, getDoc, doc, setDoc, getDocs, deleteDoc, updateDoc} = require('firebase/firestore')
 const cors = require('cors')
 require('dotenv/config')
 
@@ -98,7 +98,6 @@ app.get('/usuarios', async (req, res) => {
   })
 })
 
-
 app.post('/login', (req, res) => {
   let {email, password} = req.body
 
@@ -132,6 +131,61 @@ app.post('/login', (req, res) => {
       })
     }
   })
+})
+
+app.post('/delete', (req, res) => {
+  let { email } = req.body
+
+  deleteDoc(doc(collection(db, 'users'), email))
+  .then((response) => {
+    res.json({
+      message: 'Usuario Borrado',
+      'alert': 'Success!!'
+    })
+  })
+  .catch((error) => {
+    res.json({
+      'alert': error
+    })
+  })
+})
+
+app.post('/update', (req, res) => {
+  const { name, lastname, email, number } = req.body
+
+  if(name.length < 3){
+    res.json({
+      'alert': 'nombre requiere mínimo 3 caracteres'
+    })
+  }else if (lastname.length < 3) {
+    res.json({
+      'alert': 'apellido requiere mínimo 3 caracteres'
+    }) 
+  } else if (!Number(number) || number.length < 10) {
+    res.json({
+      'alert': 'Introduce un número telefónico correcto'
+    })
+  } else {
+    // db.collection('users').doc('email')
+    const pedro = collection(db, 'users')
+    const updateData = {
+      name,
+      lastname,
+      number
+    }
+    updateDoc(doc(pedro, email), updateData, email)
+    .then((response) => {
+      res.json({
+        message: 'actualizado',
+        'alert': 'Success!!'
+      })
+    })
+    .catch((error) => {
+      res.json({
+        'alert': error
+      })
+    })
+  }
 })
 
 const PORT = process.env.PORT || 19000
